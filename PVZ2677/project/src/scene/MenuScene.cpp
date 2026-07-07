@@ -6,9 +6,12 @@
 
 MenuScene::MenuScene() {
     sceneID = SceneID::Menu;
+    skipInputFrame = false;
 }
 
 void MenuScene::OnEnter() {
+    skipInputFrame = true;  // 首帧锁定，防止跨场景误触
+
     int buttonWidth = GameConstants::BUTTON_WIDTH;
     int buttonHeight = GameConstants::BUTTON_HEIGHT;
     int centerX = (GameConstants::WINDOW_WIDTH - buttonWidth) / 2;
@@ -41,6 +44,12 @@ void MenuScene::OnExit() {
 
 void MenuScene::Update(float dt) {
     InputManager& input = Game::GetInstance().GetInputManager();
+
+    if (skipInputFrame) {
+        skipInputFrame = false;
+        return;
+    }
+
     int mx = input.GetMouseX();
     int my = input.GetMouseY();
 

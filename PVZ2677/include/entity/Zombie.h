@@ -36,6 +36,8 @@ public:
     bool        IsAlive() const          { return isAlive; }
     bool        IsAttacking() const      { return state == ZombieState::Attacking; }
     bool        HasReachedEnd() const    { return reachedEnd; }
+    bool        CanDealDamage() const    { return dealDamageNow; }
+    void        ResetDamageFlag()        { dealDamageNow = false; }
     ZombieState GetState() const         { return state; }
     const std::wstring& GetName() const  { return name; }
 
@@ -52,6 +54,7 @@ protected:
     bool isAlive;
     bool reachedEnd;
     bool targetPlantAlive;
+    bool dealDamageNow;
     ZombieState state;
     float deathTimer;
 };

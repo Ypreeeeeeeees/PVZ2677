@@ -15,7 +15,7 @@
 
 GameplayScene::GameplayScene()
     : plantingType(CardType::SunFlower), isPlanting(false),
-      naturalSunTimer(0.0f), gameState(0) {
+      plantLockFrame(false), naturalSunTimer(0.0f), gameState(0) {
     sceneID = SceneID::Gameplay;
 }
 
@@ -88,10 +88,20 @@ void GameplayScene::HandleInput(float dt) {
     }
 
     if (isPlanting) {
+        // 首帧锁定：跳过卡片点击所在帧的种植判定
+        if (plantLockFrame) {
+            plantLockFrame = false;
+            return;
+        }
         // 右键取消种植
         if (input.IsMouseClicked() && mx < GameConstants::MAP_OFFSET_X) {
             isPlanting = false;
-        } else if (input.IsMouseClicked()) {
+            return;
+        }
+        // 仅在地图区域内点击才种植
+        if (input.IsMouseClicked() &&
+            my >= GameConstants::MAP_OFFSET_Y &&
+            my <= GameConstants::MAP_OFFSET_Y + GameConstants::MAP_GRID_HEIGHT) {
             TryPlant(mx, my);
         }
         return;
@@ -135,6 +145,7 @@ void GameplayScene::StartPlanting(CardType type) {
 
     plantingType = type;
     isPlanting = true;
+    plantLockFrame = true;
 }
 
 void GameplayScene::TryPlant(int screenX, int screenY) {
@@ -236,10 +247,10 @@ void GameplayScene::CheckCollisions() {
     collisionManager.CheckZombiePlant(zombies, map);
     collisionManager.CheckBulletZombie(bullets, zombies);
 
-    // 僵尸攻击植物：在 Walking 状态进入 Attacking 触发
+    // 僵尸攻击植物伤害结算（按攻击间隔）
     for (auto& zombie : zombies) {
-        if (!zombie->IsAlive()) continue;
-        if (!zombie->IsAttacking()) continue;
+        if (!zombie->IsAlive() || !zombie->IsAttacking()) continue;
+        if (!zombie->CanDealDamage()) continue;
 
         int row = zombie->GetRow();
         float zx = zombie->GetX();
@@ -248,7 +259,8 @@ void GameplayScene::CheckCollisions() {
             Point pt = map.CellToScreen(plant->GetRow(), plant->GetCol());
             int pw = GameConstants::CELL_SIZE * 2 / 3;
             if (zx <= pt.x + pw / 2) {
-                plant->TakeDamage(static_cast<int>(zombie->GetAttackPower() * 0.016f));
+                plant->TakeDamage(zombie->GetAttackPower());
+                zombie->ResetDamageFlag();
                 break;
             }
         }
@@ -325,6 +337,26 @@ void GameplayScene::Render() {
             solidroundrect(cx, cy, cx + s, cy + s, 6, 6);
             setfillcolor(RGB(30, 100, 30));
             solidrectangle(pt.x + s / 4, pt.y - 4, pt.x + s / 2, pt.y + 4);
+        }
+
+        // ---- 血条 ----
+        if (plant->GetHealth() < plant->GetMaxHealth()) {
+            int barW = s;
+            int barH = 6;
+            int barX = cx;
+            int barY = cy - 10;
+            float ratio = static_cast<float>(plant->GetHealth()) / static_cast<float>(plant->GetMaxHealth());
+            int fillW = static_cast<int>(barW * ratio);
+
+            // 背景
+            setfillcolor(RGB(60, 60, 60));
+            solidrectangle(barX, barY, barX + barW, barY + barH);
+            // 血量（绿→黄→红渐变）
+            COLORREF hpColor = (ratio > 0.5f) ? RGB(100, 220, 80)
+                             : (ratio > 0.25f) ? RGB(220, 200, 50)
+                             : RGB(220, 60, 60);
+            setfillcolor(hpColor);
+            solidrectangle(barX, barY, barX + fillW, barY + barH);
         }
     }
 

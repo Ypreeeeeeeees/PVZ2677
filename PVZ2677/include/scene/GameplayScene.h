@@ -51,6 +51,7 @@ private:
 
     CardType plantingType;   // 当前种植模式下的植物类型
     bool isPlanting;         // 是否在种植模式中
+    bool plantLockFrame;     // 进入种植模式的首帧锁定
     float naturalSunTimer;   // 自然阳光计时器
     int gameState;           // 0=进行中, 1=胜利, 2=失败
 };

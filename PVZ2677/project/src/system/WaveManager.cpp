@@ -43,14 +43,14 @@ void WaveManager::SpawnWave(std::vector<std::unique_ptr<Zombie>>& zombies, int m
 
     for (int i = 0; i < w.normalCount; i++) {
         int row = rand() % mapRows;
-        float y = offsetY + row * cellSize + cellSize / 2.0f;
+        float y = static_cast<float>(offsetY + row * cellSize);  // 行顶部
         float x = startX + i * 80.0f;
         zombies.push_back(std::make_unique<NormalZombie>(row, x, y));
     }
 
     for (int i = 0; i < w.bucketCount; i++) {
         int row = rand() % mapRows;
-        float y = offsetY + row * cellSize + cellSize / 2.0f;
+        float y = static_cast<float>(offsetY + row * cellSize);  // 行顶部
         float x = startX + (w.normalCount + i) * 80.0f;
         zombies.push_back(std::make_unique<BucketZombie>(row, x, y));
     }

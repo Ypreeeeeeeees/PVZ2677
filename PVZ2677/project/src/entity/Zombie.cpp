@@ -9,7 +9,8 @@ Zombie::Zombie(const std::wstring& name, int row, float x, float y,
       health(health), maxHealth(maxHealth), speed(speed),
       attackPower(attackPower), attackInterval(attackInterval),
       attackTimer(0.0f), isAlive(true), reachedEnd(false),
-      targetPlantAlive(false), state(ZombieState::Walking),
+      targetPlantAlive(false), dealDamageNow(false),
+      state(ZombieState::Walking),
       deathTimer(0.0f) {
 }
 
@@ -18,9 +19,12 @@ void Zombie::Update(float dt) {
 
     switch (state) {
     case ZombieState::Walking:
-        x -= speed * dt;
-        if (!targetPlantAlive && health > 0) {
-            state = ZombieState::Walking;
+        if (targetPlantAlive) {
+            // 遇到植物 → 进入攻击状态
+            state = ZombieState::Attacking;
+            attackTimer = 0.0f;
+        } else {
+            x -= speed * dt;
         }
         break;
 
@@ -28,8 +32,10 @@ void Zombie::Update(float dt) {
         attackTimer += dt;
         if (attackTimer >= attackInterval) {
             attackTimer = 0.0f;
+            dealDamageNow = true;  // 攻击间隔到，本帧可造成伤害
         }
         if (!targetPlantAlive) {
+            // 植物死了 → 继续行走
             state = ZombieState::Walking;
             attackTimer = 0.0f;
         }
@@ -54,17 +60,16 @@ void Zombie::Render() {
 
     switch (state) {
     case ZombieState::Walking:
-        // 灰色矩形 + 水平偏移模拟行走摇摆
+        // 灰色矩形
         setfillcolor(RGB(130, 130, 130));
         solidroundrect(drawX, drawY, drawX + w, drawY + h, 4, 4);
-        // "眼睛"
         setfillcolor(RGB(255, 50, 50));
         solidcircle(drawX + w * 3 / 4, drawY + h / 4, 4);
         solidcircle(drawX + w * 3 / 4, drawY + h * 2 / 3, 4);
         break;
 
     case ZombieState::Attacking: {
-        // 暗红色矩形 + 攻击动画偏移
+        // 暗红色矩形 + 攻击前倾偏移
         setfillcolor(RGB(180, 80, 80));
         int offsetX = static_cast<int>(attackTimer * 10.0f) % 6 - 3;
         solidroundrect(drawX + offsetX, drawY, drawX + w + offsetX, drawY + h, 4, 4);
@@ -75,7 +80,7 @@ void Zombie::Render() {
     }
 
     case ZombieState::Dead:
-        // 渐隐效果（占位：深色矩形）
+        // 倒地渐隐
         setfillcolor(RGB(60, 60, 60));
         solidroundrect(drawX, drawY + h / 3, drawX + w, drawY + h, 4, 4);
         break;

@@ -18,9 +18,8 @@ private:
     int  mouseX, mouseY;
     bool mouseDown;
     bool mouseClicked;
-    bool prevMouseDown;
     bool keyDown[256];
-    bool prevKeyDown[256];
+    bool keyPressed[256];
 };
 
 #endif // PVZ_INPUTMANAGER_H
