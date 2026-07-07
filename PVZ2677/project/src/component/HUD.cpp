@@ -4,7 +4,7 @@
 #include <string>
 
 HUD::HUD()
-    : sunCount(GameConstants::INITIAL_SUN) {
+    : sunCount(GameConstants::INITIAL_SUN), currentWave(0), totalWaves(0) {
 }
 
 bool HUD::SpendSun(int amount) {
@@ -30,4 +30,14 @@ void HUD::Render() {
 
     std::wstring text = std::to_wstring(sunCount);
     outtextxy(x + 48, y + 6, text.c_str());
+
+    // 波次信息
+    if (totalWaves > 0) {
+        settextcolor(RGB(220, 180, 100));
+        settextstyle(18, 0, _T("微软雅黑"));
+        int waveX = GameConstants::WINDOW_WIDTH - 200;
+        std::wstring waveText = L"波次 " + std::to_wstring(currentWave)
+                              + L" / " + std::to_wstring(totalWaves);
+        outtextxy(waveX, 12, waveText.c_str());
+    }
 }

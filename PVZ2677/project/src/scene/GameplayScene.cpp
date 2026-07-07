@@ -70,6 +70,7 @@ void GameplayScene::Update(float dt) {
     HandleInput(dt);
     UpdateSunSystem(dt);
     waveManager.Update(dt, zombies, GameConstants::MAP_ROWS);
+    hud.SetWaveInfo(waveManager.GetCurrentWave(), waveManager.GetTotalWaves());
     UpdateEntities(dt);
     CheckCollisions();
     CleanupDead();

@@ -40,12 +40,12 @@ namespace GameConstants {
 
     // ---- 普通僵尸 ----
     constexpr int NORMAL_ZOMBIE_HEALTH = 200;
-    constexpr float NORMAL_ZOMBIE_SPEED = 20.0f;
+    constexpr float NORMAL_ZOMBIE_SPEED = 16.0f;
     constexpr int NORMAL_ZOMBIE_ATTACK = 10;
 
     // ---- 铁桶僵尸 ----
     constexpr int BUCKET_ZOMBIE_HEALTH = 600;
-    constexpr float BUCKET_ZOMBIE_SPEED = 18.0f;
+    constexpr float BUCKET_ZOMBIE_SPEED = 14.0f;
 
     // ---- 启动界面 ----
     constexpr float SPLASH_DURATION = 2.0f;

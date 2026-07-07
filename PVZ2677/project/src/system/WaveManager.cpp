@@ -18,8 +18,18 @@ void WaveManager::Init(int totalWaves) {
     for (int i = 0; i < totalWaves; i++) {
         WaveEntry w;
         w.spawnTime = 15.0f;
-        w.normalCount = 1 + i;
-        w.bucketCount = (i >= 2) ? 1 : 0;
+        // 递增平缓：第1波1个 → 第2波2个 → 第3~4波2~3个 → 最终波4个
+        if (i == 0)      w.normalCount = 1;
+        else if (i == 1) w.normalCount = 2;
+        else if (i == 2) w.normalCount = 2;
+        else if (i == 3) w.normalCount = 3;
+        else             w.normalCount = 4;
+
+        // 铁桶僵尸从第3波起每波1个，最终波2个
+        if (i == 4)      w.bucketCount = 2;
+        else if (i >= 2) w.bucketCount = 1;
+        else             w.bucketCount = 0;
+
         waves.push_back(w);
     }
 }
