@@ -1,17 +1,108 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="源文件">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    <Filter Include="core">
+      <UniqueIdentifier>{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}</UniqueIdentifier>
     </Filter>
-    <Filter Include="头文件">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    <Filter Include="scene">
+      <UniqueIdentifier>{B2C3D4E5-F6A7-8901-BCDE-F12345678901}</UniqueIdentifier>
     </Filter>
-    <Filter Include="资源文件">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    <Filter Include="component">
+      <UniqueIdentifier>{C3D4E5F6-A7B8-9012-CDEF-123456789012}</UniqueIdentifier>
     </Filter>
+    <Filter Include="system">
+      <UniqueIdentifier>{D4E5F6A7-B8C9-0123-DEFA-234567890123}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="entity">
+      <UniqueIdentifier>{E5F6A7B8-C9D0-1234-EFAB-345678901234}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="utils">
+      <UniqueIdentifier>{F6A7B8C9-D0E1-2345-FABC-456789012345}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\core\Scene.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\core\Game.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\core\GameTimer.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\core\SceneManager.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\scene\SplashScene.h">
+      <Filter>scene</Filter>
+    </ClInclude>
+    <ClInclude Include="include\scene\MenuScene.h">
+      <Filter>scene</Filter>
+    </ClInclude>
+    <ClInclude Include="include\scene\HelpScene.h">
+      <Filter>scene</Filter>
+    </ClInclude>
+    <ClInclude Include="include\scene\AboutScene.h">
+      <Filter>scene</Filter>
+    </ClInclude>
+    <ClInclude Include="include\scene\SettingsScene.h">
+      <Filter>scene</Filter>
+    </ClInclude>
+    <ClInclude Include="include\component\Button.h">
+      <Filter>component</Filter>
+    </ClInclude>
+    <ClInclude Include="include\system\InputManager.h">
+      <Filter>system</Filter>
+    </ClInclude>
+    <ClInclude Include="include\system\ResourceManager.h">
+      <Filter>system</Filter>
+    </ClInclude>
+    <ClInclude Include="include\utils\Config.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="include\utils\Constants.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="project\src\main.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="project\src\core\Game.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="project\src\core\GameTimer.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="project\src\core\SceneManager.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="project\src\scene\SplashScene.cpp">
+      <Filter>scene</Filter>
+    </ClCompile>
+    <ClCompile Include="project\src\scene\MenuScene.cpp">
+      <Filter>scene</Filter>
+    </ClCompile>
+    <ClCompile Include="project\src\scene\HelpScene.cpp">
+      <Filter>scene</Filter>
+    </ClCompile>
+    <ClCompile Include="project\src\scene\AboutScene.cpp">
+      <Filter>scene</Filter>
+    </ClCompile>
+    <ClCompile Include="project\src\scene\SettingsScene.cpp">
+      <Filter>scene</Filter>
+    </ClCompile>
+    <ClCompile Include="project\src\component\Button.cpp">
+      <Filter>component</Filter>
+    </ClCompile>
+    <ClCompile Include="project\src\system\InputManager.cpp">
+      <Filter>system</Filter>
+    </ClCompile>
+    <ClCompile Include="project\src\system\ResourceManager.cpp">
+      <Filter>system</Filter>
+    </ClCompile>
+    <ClCompile Include="project\src\utils\Config.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

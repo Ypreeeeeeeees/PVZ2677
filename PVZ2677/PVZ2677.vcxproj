@@ -76,6 +76,9 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -90,6 +93,9 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -102,6 +108,9 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -116,12 +125,46 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="include\core\Scene.h" />
+    <ClInclude Include="include\core\Game.h" />
+    <ClInclude Include="include\core\GameTimer.h" />
+    <ClInclude Include="include\core\SceneManager.h" />
+    <ClInclude Include="include\scene\SplashScene.h" />
+    <ClInclude Include="include\scene\MenuScene.h" />
+    <ClInclude Include="include\scene\HelpScene.h" />
+    <ClInclude Include="include\scene\AboutScene.h" />
+    <ClInclude Include="include\scene\SettingsScene.h" />
+    <ClInclude Include="include\component\Button.h" />
+    <ClInclude Include="include\system\InputManager.h" />
+    <ClInclude Include="include\system\ResourceManager.h" />
+    <ClInclude Include="include\utils\Config.h" />
+    <ClInclude Include="include\utils\Constants.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="project\src\main.cpp" />
+    <ClCompile Include="project\src\core\Game.cpp" />
+    <ClCompile Include="project\src\core\GameTimer.cpp" />
+    <ClCompile Include="project\src\core\SceneManager.cpp" />
+    <ClCompile Include="project\src\scene\SplashScene.cpp" />
+    <ClCompile Include="project\src\scene\MenuScene.cpp" />
+    <ClCompile Include="project\src\scene\HelpScene.cpp" />
+    <ClCompile Include="project\src\scene\AboutScene.cpp" />
+    <ClCompile Include="project\src\scene\SettingsScene.cpp" />
+    <ClCompile Include="project\src\component\Button.cpp" />
+    <ClCompile Include="project\src\system\InputManager.cpp" />
+    <ClCompile Include="project\src\system\ResourceManager.cpp" />
+    <ClCompile Include="project\src\utils\Config.cpp" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
