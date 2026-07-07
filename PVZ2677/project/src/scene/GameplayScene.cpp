@@ -255,7 +255,7 @@ void GameplayScene::CheckCollisions() {
         int row = zombie->GetRow();
         float zx = zombie->GetX();
         for (auto& plant : plants) {
-            if (!plant->IsAlive() || plant->GetRow() != row) continue;
+            if (!plant->IsAlive() || plant->GetState() == PlantState::Dead || plant->GetRow() != row) continue;
             Point pt = map.CellToScreen(plant->GetRow(), plant->GetCol());
             int pw = GameConstants::CELL_SIZE * 2 / 3;
             if (zx <= pt.x + pw / 2) {
@@ -268,10 +268,14 @@ void GameplayScene::CheckCollisions() {
 }
 
 void GameplayScene::CleanupDead() {
-    // 清除死亡植物
+    // 清除死亡植物（同步清理 Map 格子）
     plants.erase(std::remove_if(plants.begin(), plants.end(),
-        [](const auto& p) {
-            return !p->IsAlive() && p->GetState() == PlantState::Dead;
+        [this](const auto& p) {
+            if (!p->IsAlive() && p->GetState() == PlantState::Dead) {
+                map.RemovePlant(p->GetRow(), p->GetCol());
+                return true;
+            }
+            return false;
         }), plants.end());
 
     // 清除死亡僵尸

@@ -77,6 +77,7 @@ void Plant::Render() {
 
 void Plant::TakeDamage(int damage) {
     if (!isAlive) return;
+    if (state == PlantState::Dead) return;  // 已死，不再受伤
     health -= damage;
     if (health <= 0) {
         health = 0;
