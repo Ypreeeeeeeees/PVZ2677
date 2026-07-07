@@ -11,6 +11,12 @@ namespace GameConstants {
     // ---- 地图 ----
     constexpr int MAP_ROWS = 5;
     constexpr int MAP_COLS = 9;
+    constexpr int CELL_SIZE = 110;               // 每格边长（正方形）
+    constexpr int MAP_OFFSET_X = 145;            // 草坪左边界 X
+    constexpr int MAP_OFFSET_Y = 100;            // 草坪上边界 Y（卡槽下方）
+    constexpr int MAP_GRID_WIDTH = MAP_COLS * CELL_SIZE;   // 990
+    constexpr int MAP_GRID_HEIGHT = MAP_ROWS * CELL_SIZE;  // 550
+    constexpr int HOUSE_BOUNDARY_X = 120;        // 房子左边界线
 
     // ---- 阳光 ----
     constexpr int INITIAL_SUN = 150;

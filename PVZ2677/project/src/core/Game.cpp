@@ -6,6 +6,10 @@
 #include "scene/HelpScene.h"
 #include "scene/AboutScene.h"
 #include "scene/SettingsScene.h"
+#include "scene/GameplayScene.h"
+#include "scene/PauseScene.h"
+#include "scene/VictoryScene.h"
+#include "scene/DefeatScene.h"
 #include "system/InputManager.h"
 #include "system/ResourceManager.h"
 #include "utils/Config.h"
@@ -18,7 +22,6 @@ Game& Game::GetInstance() {
 }
 
 Game::~Game() {
-    // 资源由 unique_ptr 自动管理
 }
 
 bool Game::Init(int width, int height, const wchar_t* title) {
@@ -38,6 +41,10 @@ bool Game::Init(int width, int height, const wchar_t* title) {
     sceneManager = std::make_unique<SceneManager>();
     sceneManager->RegisterScene(SceneID::Splash,   std::make_unique<SplashScene>());
     sceneManager->RegisterScene(SceneID::Menu,     std::make_unique<MenuScene>());
+    sceneManager->RegisterScene(SceneID::Gameplay, std::make_unique<GameplayScene>());
+    sceneManager->RegisterScene(SceneID::Pause,    std::make_unique<PauseScene>());
+    sceneManager->RegisterScene(SceneID::Victory,  std::make_unique<VictoryScene>());
+    sceneManager->RegisterScene(SceneID::Defeat,   std::make_unique<DefeatScene>());
     sceneManager->RegisterScene(SceneID::Help,     std::make_unique<HelpScene>());
     sceneManager->RegisterScene(SceneID::About,    std::make_unique<AboutScene>());
     sceneManager->RegisterScene(SceneID::Settings, std::make_unique<SettingsScene>());

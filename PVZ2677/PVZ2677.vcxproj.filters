@@ -48,13 +48,64 @@
     <ClInclude Include="include\scene\SettingsScene.h">
       <Filter>scene</Filter>
     </ClInclude>
+    <ClInclude Include="include\scene\GameplayScene.h">
+      <Filter>scene</Filter>
+    </ClInclude>
+    <ClInclude Include="include\scene\PauseScene.h">
+      <Filter>scene</Filter>
+    </ClInclude>
+    <ClInclude Include="include\scene\VictoryScene.h">
+      <Filter>scene</Filter>
+    </ClInclude>
+    <ClInclude Include="include\scene\DefeatScene.h">
+      <Filter>scene</Filter>
+    </ClInclude>
+    <ClInclude Include="include\entity\Plant.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="include\entity\SunFlower.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="include\entity\PeaShooter.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="include\entity\Zombie.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="include\entity\NormalZombie.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="include\entity\BucketZombie.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="include\entity\Bullet.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="include\entity\Sun.h">
+      <Filter>entity</Filter>
+    </ClInclude>
     <ClInclude Include="include\component\Button.h">
+      <Filter>component</Filter>
+    </ClInclude>
+    <ClInclude Include="include\component\Card.h">
+      <Filter>component</Filter>
+    </ClInclude>
+    <ClInclude Include="include\component\HUD.h">
       <Filter>component</Filter>
     </ClInclude>
     <ClInclude Include="include\system\InputManager.h">
       <Filter>system</Filter>
     </ClInclude>
+    <ClInclude Include="include\system\Map.h">
+      <Filter>system</Filter>
+    </ClInclude>
     <ClInclude Include="include\system\ResourceManager.h">
+      <Filter>system</Filter>
+    </ClInclude>
+    <ClInclude Include="include\system\CollisionManager.h">
+      <Filter>system</Filter>
+    </ClInclude>
+    <ClInclude Include="include\system\WaveManager.h">
       <Filter>system</Filter>
     </ClInclude>
     <ClInclude Include="include\utils\Config.h">
@@ -92,13 +143,64 @@
     <ClCompile Include="project\src\scene\SettingsScene.cpp">
       <Filter>scene</Filter>
     </ClCompile>
+    <ClCompile Include="project\src\scene\GameplayScene.cpp">
+      <Filter>scene</Filter>
+    </ClCompile>
+    <ClCompile Include="project\src\scene\PauseScene.cpp">
+      <Filter>scene</Filter>
+    </ClCompile>
+    <ClCompile Include="project\src\scene\VictoryScene.cpp">
+      <Filter>scene</Filter>
+    </ClCompile>
+    <ClCompile Include="project\src\scene\DefeatScene.cpp">
+      <Filter>scene</Filter>
+    </ClCompile>
+    <ClCompile Include="project\src\entity\Plant.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
+    <ClCompile Include="project\src\entity\SunFlower.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
+    <ClCompile Include="project\src\entity\PeaShooter.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
+    <ClCompile Include="project\src\entity\Zombie.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
+    <ClCompile Include="project\src\entity\NormalZombie.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
+    <ClCompile Include="project\src\entity\BucketZombie.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
+    <ClCompile Include="project\src\entity\Bullet.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
+    <ClCompile Include="project\src\entity\Sun.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
     <ClCompile Include="project\src\component\Button.cpp">
+      <Filter>component</Filter>
+    </ClCompile>
+    <ClCompile Include="project\src\component\Card.cpp">
+      <Filter>component</Filter>
+    </ClCompile>
+    <ClCompile Include="project\src\component\HUD.cpp">
       <Filter>component</Filter>
     </ClCompile>
     <ClCompile Include="project\src\system\InputManager.cpp">
       <Filter>system</Filter>
     </ClCompile>
+    <ClCompile Include="project\src\system\Map.cpp">
+      <Filter>system</Filter>
+    </ClCompile>
     <ClCompile Include="project\src\system\ResourceManager.cpp">
+      <Filter>system</Filter>
+    </ClCompile>
+    <ClCompile Include="project\src\system\CollisionManager.cpp">
+      <Filter>system</Filter>
+    </ClCompile>
+    <ClCompile Include="project\src\system\WaveManager.cpp">
       <Filter>system</Filter>
     </ClCompile>
     <ClCompile Include="project\src\utils\Config.cpp">
