@@ -40,7 +40,7 @@ private:
 
     Map map;
     HUD hud;
-    Card cards[2];          // 向日葵、豌豆射手
+    Card cards[3];          // 向日葵、豌豆射手、坚果墙
     CollisionManager collisionManager;
     WaveManager waveManager;
 
@@ -52,6 +52,8 @@ private:
     CardType plantingType;   // 当前种植模式下的植物类型
     bool isPlanting;         // 是否在种植模式中
     bool plantLockFrame;     // 进入种植模式的首帧锁定
+    bool isShovelMode;       // 铲子模式
+    int  shovelX, shovelY, shovelW, shovelH;  // 铲子按钮区域
     float naturalSunTimer;   // 自然阳光计时器
     int gameState;           // 0=进行中, 1=胜利, 2=失败
 };

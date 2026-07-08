@@ -5,6 +5,7 @@
 #include "entity/Plant.h"
 #include "entity/SunFlower.h"
 #include "entity/PeaShooter.h"
+#include "entity/WallNut.h"
 #include "entity/Zombie.h"
 #include "entity/Bullet.h"
 #include "entity/Sun.h"
@@ -15,7 +16,9 @@
 
 GameplayScene::GameplayScene()
     : plantingType(CardType::SunFlower), isPlanting(false),
-      plantLockFrame(false), naturalSunTimer(0.0f), gameState(0) {
+      plantLockFrame(false), isShovelMode(false),
+      shovelX(0), shovelY(0), shovelW(0), shovelH(0),
+      naturalSunTimer(0.0f), gameState(0) {
     sceneID = SceneID::Gameplay;
 }
 
@@ -28,7 +31,14 @@ void GameplayScene::OnEnter() {
     hud = HUD();
     gameState = 0;
     isPlanting = false;
+    isShovelMode = false;
     naturalSunTimer = 0.0f;
+
+    // 铲子按钮位置（卡片栏右侧）
+    shovelX = 470;
+    shovelY = 10;
+    shovelW = 40;
+    shovelH = 85;
 
     srand(static_cast<unsigned>(time(nullptr)));
 
@@ -39,6 +49,9 @@ void GameplayScene::OnEnter() {
     cards[1].Init(CardType::PeaShooter, L"豌豆射手",
         GameConstants::PEASHOOTER_PRICE, GameConstants::PEASHOOTER_COOLDOWN,
         290, 10, 80, 85);
+    cards[2].Init(CardType::WallNut, L"坚果墙",
+        GameConstants::WALLNUT_PRICE, GameConstants::WALLNUT_COOLDOWN,
+        380, 10, 80, 85);
 
     // 初始化波次
     waveManager.Init(5);
@@ -108,8 +121,40 @@ void GameplayScene::HandleInput(float dt) {
         return;
     }
 
+    // 铲子模式
+    if (isShovelMode) {
+        if (input.IsMouseClicked()) {
+            // 点击地图区域铲除植物
+            if (my >= GameConstants::MAP_OFFSET_Y &&
+                my <= GameConstants::MAP_OFFSET_Y + GameConstants::MAP_GRID_HEIGHT) {
+                CellPos cell = map.ScreenToCell(mx, my);
+                if (map.IsValidCell(cell.row, cell.col) && !map.CanPlant(cell.row, cell.col)) {
+                    Plant* plant = map.GetPlant(cell.row, cell.col);
+                    if (plant) {
+                        // 退还 50% 阳光
+                        hud.AddSun(plant->GetPrice() / 2);
+                        // 从 plants 容器中移除
+                        plants.erase(std::remove_if(plants.begin(), plants.end(),
+                            [&](const auto& p) { return p.get() == plant; }), plants.end());
+                        map.RemovePlant(cell.row, cell.col);
+                    }
+                }
+            }
+            isShovelMode = false;
+        }
+        return;
+    }
+
+    // 铲子按钮点击（植物栏右侧）
+    if (input.IsMouseClicked() &&
+        mx >= shovelX && mx <= shovelX + shovelW &&
+        my >= shovelY && my <= shovelY + shovelH) {
+        isShovelMode = true;
+        return;
+    }
+
     // 卡片点击
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < 3; i++) {
         cards[i].Update(dt, hud.GetSunCount());
         if (cards[i].IsClicked(mx, my, input.IsMouseClicked())) {
             StartPlanting(cards[i].GetType());
@@ -133,16 +178,21 @@ void GameplayScene::HandleInput(float dt) {
 }
 
 void GameplayScene::StartPlanting(CardType type) {
-    if (!hud.SpendSun((type == CardType::SunFlower)
-        ? GameConstants::SUNFLOWER_PRICE : GameConstants::PEASHOOTER_PRICE)) {
-        return;
+    int price = 0;
+    int cardIndex = 0;
+    if (type == CardType::SunFlower) {
+        price = GameConstants::SUNFLOWER_PRICE;
+        cardIndex = 0;
+    } else if (type == CardType::PeaShooter) {
+        price = GameConstants::PEASHOOTER_PRICE;
+        cardIndex = 1;
+    } else if (type == CardType::WallNut) {
+        price = GameConstants::WALLNUT_PRICE;
+        cardIndex = 2;
     }
 
-    if (type == CardType::SunFlower) {
-        cards[0].StartCooldown();
-    } else {
-        cards[1].StartCooldown();
-    }
+    if (!hud.SpendSun(price)) return;
+    cards[cardIndex].StartCooldown();
 
     plantingType = type;
     isPlanting = true;
@@ -165,6 +215,10 @@ void GameplayScene::TryPlant(int screenX, int screenY) {
         plants.push_back(std::move(plant));
     } else if (plantingType == CardType::PeaShooter) {
         auto plant = std::make_unique<PeaShooter>(cell.row, cell.col);
+        map.PlantAt(cell.row, cell.col, plant.get());
+        plants.push_back(std::move(plant));
+    } else if (plantingType == CardType::WallNut) {
+        auto plant = std::make_unique<WallNut>(cell.row, cell.col);
         map.PlantAt(cell.row, cell.col, plant.get());
         plants.push_back(std::move(plant));
     }
@@ -342,6 +396,13 @@ void GameplayScene::Render() {
             solidroundrect(cx, cy, cx + s, cy + s, 6, 6);
             setfillcolor(RGB(30, 100, 30));
             solidrectangle(pt.x + s / 4, pt.y - 4, pt.x + s / 2, pt.y + 4);
+        } else if (plant->GetName() == L"坚果墙") {
+            setfillcolor(RGB(160, 120, 70));
+            solidroundrect(cx, cy, cx + s, cy + s, 8, 8);
+            setfillcolor(RGB(60, 40, 20));
+            solidcircle(pt.x - s / 6, pt.y - s / 6, 4);
+            solidcircle(pt.x + s / 6, pt.y - s / 6, 4);
+            solidcircle(pt.x, pt.y + s / 5, 4);
         }
 
         // ---- 血条 ----
@@ -385,8 +446,26 @@ void GameplayScene::Render() {
     solidrectangle(0, 0, GameConstants::WINDOW_WIDTH, GameConstants::MAP_OFFSET_Y);
 
     // 卡片
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < 3; i++) {
         cards[i].Render();
+    }
+
+    // 铲子按钮
+    {
+        COLORREF shovelBg = isShovelMode ? RGB(180, 140, 80) : RGB(100, 80, 50);
+        setfillcolor(shovelBg);
+        solidroundrect(shovelX, shovelY, shovelX + shovelW, shovelY + shovelH, 4, 4);
+        setlinecolor(RGB(120, 100, 60));
+        setlinestyle(PS_SOLID, 1);
+        rectangle(shovelX, shovelY, shovelX + shovelW, shovelY + shovelH);
+
+        // 铲子图标：T 形状
+        setfillcolor(RGB(200, 160, 100));
+        int cx = shovelX + shovelW / 2;
+        // 铲柄
+        solidrectangle(cx - 2, shovelY + 10, cx + 2, shovelY + 60);
+        // 铲头
+        solidrectangle(cx - 8, shovelY + 55, cx + 8, shovelY + 65);
     }
 
     // HUD

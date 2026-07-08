@@ -151,6 +151,7 @@
     <ClInclude Include="include\entity\Plant.h" />
     <ClInclude Include="include\entity\SunFlower.h" />
     <ClInclude Include="include\entity\PeaShooter.h" />
+    <ClInclude Include="include\entity\WallNut.h" />
     <ClInclude Include="include\entity\Zombie.h" />
     <ClInclude Include="include\entity\NormalZombie.h" />
     <ClInclude Include="include\entity\BucketZombie.h" />
@@ -184,6 +185,7 @@
     <ClCompile Include="project\src\entity\Plant.cpp" />
     <ClCompile Include="project\src\entity\SunFlower.cpp" />
     <ClCompile Include="project\src\entity\PeaShooter.cpp" />
+    <ClCompile Include="project\src\entity\WallNut.cpp" />
     <ClCompile Include="project\src\entity\Zombie.cpp" />
     <ClCompile Include="project\src\entity\NormalZombie.cpp" />
     <ClCompile Include="project\src\entity\BucketZombie.cpp" />

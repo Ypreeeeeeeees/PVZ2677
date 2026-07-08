@@ -69,6 +69,9 @@
     <ClInclude Include="include\entity\PeaShooter.h">
       <Filter>entity</Filter>
     </ClInclude>
+    <ClInclude Include="include\entity\WallNut.h">
+      <Filter>entity</Filter>
+    </ClInclude>
     <ClInclude Include="include\entity\Zombie.h">
       <Filter>entity</Filter>
     </ClInclude>
@@ -162,6 +165,9 @@
       <Filter>entity</Filter>
     </ClCompile>
     <ClCompile Include="project\src\entity\PeaShooter.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
+    <ClCompile Include="project\src\entity\WallNut.cpp">
       <Filter>entity</Filter>
     </ClCompile>
     <ClCompile Include="project\src\entity\Zombie.cpp">

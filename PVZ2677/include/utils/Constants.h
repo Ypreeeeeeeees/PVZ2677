@@ -38,6 +38,11 @@ namespace GameConstants {
     constexpr int PEA_DAMAGE = 20;
     constexpr float PEA_SPEED = 150.0f;
 
+    // ---- 坚果墙 ----
+    constexpr int WALLNUT_PRICE = 50;
+    constexpr int WALLNUT_HEALTH = 1200;
+    constexpr float WALLNUT_COOLDOWN = 15.0f;
+
     // ---- 普通僵尸 ----
     constexpr int NORMAL_ZOMBIE_HEALTH = 200;
     constexpr float NORMAL_ZOMBIE_SPEED = 16.0f;
