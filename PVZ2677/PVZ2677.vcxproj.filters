@@ -87,6 +87,9 @@
     <ClInclude Include="include\entity\Sun.h">
       <Filter>entity</Filter>
     </ClInclude>
+    <ClInclude Include="include\entity\LawnMower.h">
+      <Filter>entity</Filter>
+    </ClInclude>
     <ClInclude Include="include\component\Button.h">
       <Filter>component</Filter>
     </ClInclude>
@@ -183,6 +186,9 @@
       <Filter>entity</Filter>
     </ClCompile>
     <ClCompile Include="project\src\entity\Sun.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
+    <ClCompile Include="project\src\entity\LawnMower.cpp">
       <Filter>entity</Filter>
     </ClCompile>
     <ClCompile Include="project\src\component\Button.cpp">

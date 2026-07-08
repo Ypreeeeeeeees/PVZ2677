@@ -157,6 +157,7 @@
     <ClInclude Include="include\entity\BucketZombie.h" />
     <ClInclude Include="include\entity\Bullet.h" />
     <ClInclude Include="include\entity\Sun.h" />
+    <ClInclude Include="include\entity\LawnMower.h" />
     <ClInclude Include="include\component\Button.h" />
     <ClInclude Include="include\component\Card.h" />
     <ClInclude Include="include\component\HUD.h" />
@@ -191,6 +192,7 @@
     <ClCompile Include="project\src\entity\BucketZombie.cpp" />
     <ClCompile Include="project\src\entity\Bullet.cpp" />
     <ClCompile Include="project\src\entity\Sun.cpp" />
+    <ClCompile Include="project\src\entity\LawnMower.cpp" />
     <ClCompile Include="project\src\component\Button.cpp" />
     <ClCompile Include="project\src\component\Card.cpp" />
     <ClCompile Include="project\src\component\HUD.cpp" />

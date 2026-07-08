@@ -9,6 +9,7 @@
 #include "entity/Zombie.h"
 #include "entity/Bullet.h"
 #include "entity/Sun.h"
+#include "entity/LawnMower.h"
 #include "utils/Constants.h"
 #include <graphics.h>
 #include <cstdlib>
@@ -54,7 +55,15 @@ void GameplayScene::OnEnter() {
         380, 10, 80, 85);
 
     // 初始化波次
-    waveManager.Init(5);
+    waveManager.Init(5, Game::GetInstance().GetDifficulty());
+
+    // 初始化小推车（每行一个，放在房子边界右侧）
+    for (int r = 0; r < GameConstants::MAP_ROWS; r++) {
+        float mowerY = static_cast<float>(GameConstants::MAP_OFFSET_Y + r * GameConstants::CELL_SIZE);
+        lawnMowers.push_back(std::make_unique<LawnMower>(
+            r, static_cast<float>(GameConstants::HOUSE_BOUNDARY_X + 20),
+            mowerY, GameConstants::LAWNMOWER_SPEED));
+    }
 
     // 清空实体
     plants.clear();
@@ -68,11 +77,18 @@ void GameplayScene::OnExit() {
     zombies.clear();
     bullets.clear();
     suns.clear();
+    lawnMowers.clear();
 }
 
 void GameplayScene::Update(float dt) {
     if (gameState != 0) {
         if (gameState == 1) {
+            // 统计未被触发的小推车（状态仍为 Idle）
+            int mowers = 0;
+            for (auto& m : lawnMowers) {
+                if (m->GetState() == LawnMowerState::Idle) mowers++;
+            }
+            Game::GetInstance().SetVictoryInfo(mowers);
             Game::GetInstance().GetSceneManager().SwitchTo(SceneID::Victory);
         } else {
             Game::GetInstance().GetSceneManager().SwitchTo(SceneID::Defeat);
@@ -83,9 +99,21 @@ void GameplayScene::Update(float dt) {
     HandleInput(dt);
     UpdateSunSystem(dt);
     waveManager.Update(dt, zombies, GameConstants::MAP_ROWS);
+
+    // 检测新波次 → 触发居中提示
+    int waveNow = waveManager.GetCurrentWave();
+    if (waveNow > lastWaveAnnounced && waveNow <= waveManager.GetTotalWaves()) {
+        lastWaveAnnounced = waveNow;
+        waveAnnouncementTimer = 2.0f;
+    }
+    if (waveAnnouncementTimer > 0.0f) {
+        waveAnnouncementTimer -= dt;
+    }
+
     hud.SetWaveInfo(waveManager.GetCurrentWave(), waveManager.GetTotalWaves());
     UpdateEntities(dt);
     CheckCollisions();
+    CheckLawnMowers();
     CleanupDead();
     CheckWinLose();
 }
@@ -288,6 +316,11 @@ void GameplayScene::UpdateEntities(float dt) {
         bullet->Update(dt);
     }
 
+    // 小推车更新
+    for (auto& mower : lawnMowers) {
+        mower->Update(dt);
+    }
+
     // 检查僵尸是否到达房子
     for (auto& zombie : zombies) {
         if (zombie->IsAlive() &&
@@ -344,6 +377,40 @@ void GameplayScene::CleanupDead() {
     // 清除消失的阳光
     suns.erase(std::remove_if(suns.begin(), suns.end(),
         [](const auto& s) { return !s->IsAlive(); }), suns.end());
+
+    // 清除已飞出屏幕的小推车
+    lawnMowers.erase(std::remove_if(lawnMowers.begin(), lawnMowers.end(),
+        [](const auto& m) { return m->GetState() == LawnMowerState::Gone; }), lawnMowers.end());
+}
+
+void GameplayScene::CheckLawnMowers() {
+    for (auto& mower : lawnMowers) {
+        if (mower->GetState() != LawnMowerState::Idle) continue;
+        int row = mower->GetRow();
+        float triggerX = GameConstants::LAWNMOWER_TRIGGER_X;
+
+        for (auto& zombie : zombies) {
+            if (!zombie->IsAlive() || zombie->GetRow() != row) continue;
+            if (zombie->GetX() <= triggerX) {
+                mower->Trigger();
+                break;
+            }
+        }
+    }
+
+    // 移动中的小推车消灭同行所有僵尸
+    for (auto& mower : lawnMowers) {
+        if (mower->GetState() != LawnMowerState::Moving) continue;
+        int row = mower->GetRow();
+        float mowerX = mower->GetX();
+
+        for (auto& zombie : zombies) {
+            if (!zombie->IsAlive() || zombie->GetRow() != row) continue;
+            if (zombie->GetX() >= mowerX - 10 && zombie->GetX() <= mowerX + 60) {
+                zombie->TakeDamage(9999);  // 一击必杀
+            }
+        }
+    }
 }
 
 void GameplayScene::CheckWinLose() {
@@ -431,6 +498,11 @@ void GameplayScene::Render() {
         zombie->Render();
     }
 
+    // 小推车（在僵尸上方绘制）
+    for (auto& mower : lawnMowers) {
+        mower->Render();
+    }
+
     // 子弹
     for (auto& bullet : bullets) {
         bullet->Render();
@@ -470,4 +542,18 @@ void GameplayScene::Render() {
 
     // HUD
     hud.Render();
+
+    // 新波次提示（居中大字）
+    if (waveAnnouncementTimer > 0.0f) {
+        std::wstring waveText = L"第 " + std::to_wstring(waveManager.GetCurrentWave()) + L" 波僵尸来袭!";
+        int alpha = static_cast<int>(waveAnnouncementTimer * 127);  // 渐隐效果
+        if (alpha > 255) alpha = 255;
+        settextcolor(RGB(255, 100 + alpha / 3, 50));
+        settextstyle(40, 0, _T("微软雅黑"));
+        setbkmode(TRANSPARENT);
+        int tw = textwidth(waveText.c_str());
+        outtextxy((GameConstants::WINDOW_WIDTH - tw) / 2,
+                  GameConstants::WINDOW_HEIGHT / 2 - 20,
+                  waveText.c_str());
+    }
 }

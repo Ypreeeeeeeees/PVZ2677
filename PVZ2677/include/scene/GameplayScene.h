@@ -14,6 +14,7 @@ class Plant;
 class Zombie;
 class Bullet;
 class Sun;
+class LawnMower;
 class SunFlower;
 class PeaShooter;
 
@@ -31,6 +32,7 @@ private:
     void UpdateSunSystem(float dt);
     void UpdateEntities(float dt);
     void CheckCollisions();
+    void CheckLawnMowers();
     void CleanupDead();
     void CheckWinLose();
 
@@ -48,6 +50,7 @@ private:
     std::vector<std::unique_ptr<Zombie>> zombies;
     std::vector<std::unique_ptr<Bullet>> bullets;
     std::vector<std::unique_ptr<Sun>> suns;
+    std::vector<std::unique_ptr<LawnMower>> lawnMowers;
 
     CardType plantingType;   // 当前种植模式下的植物类型
     bool isPlanting;         // 是否在种植模式中
@@ -56,6 +59,8 @@ private:
     int  shovelX, shovelY, shovelW, shovelH;  // 铲子按钮区域
     float naturalSunTimer;   // 自然阳光计时器
     int gameState;           // 0=进行中, 1=胜利, 2=失败
+    float waveAnnouncementTimer = 0.0f;  // 新波次提示计时器
+    int   lastWaveAnnounced = 0;         // 上轮已提示到的波次
 };
 
 #endif // PVZ_GAMEPLAYSCENE_H

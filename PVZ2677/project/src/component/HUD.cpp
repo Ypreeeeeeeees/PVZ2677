@@ -34,10 +34,10 @@ void HUD::Render() {
     // 波次信息
     if (totalWaves > 0) {
         settextcolor(RGB(220, 180, 100));
-        settextstyle(18, 0, _T("微软雅黑"));
-        int waveX = GameConstants::WINDOW_WIDTH - 200;
+        settextstyle(24, 0, _T("微软雅黑"));
+        int waveX = GameConstants::WINDOW_WIDTH - 220;
         std::wstring waveText = L"波次 " + std::to_wstring(currentWave)
                               + L" / " + std::to_wstring(totalWaves);
-        outtextxy(waveX, 12, waveText.c_str());
+        outtextxy(waveX, 8, waveText.c_str());
     }
 }

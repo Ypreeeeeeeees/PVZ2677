@@ -4,6 +4,8 @@
 #include <vector>
 #include <memory>
 
+enum class Difficulty;
+
 class Zombie;
 
 struct WaveEntry {
@@ -16,7 +18,7 @@ class WaveManager {
 public:
     WaveManager();
 
-    void Init(int totalWaves);
+    void Init(int totalWaves, Difficulty difficulty);
     void Update(float dt, std::vector<std::unique_ptr<Zombie>>& zombies, int mapRows);
     bool IsAllWavesFinished() const { return currentWave >= totalWaves; }
     int  GetCurrentWave() const { return currentWave; }

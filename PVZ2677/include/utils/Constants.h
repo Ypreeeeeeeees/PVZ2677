@@ -18,6 +18,10 @@ namespace GameConstants {
     constexpr int MAP_GRID_HEIGHT = MAP_ROWS * CELL_SIZE;  // 550
     constexpr int HOUSE_BOUNDARY_X = 120;        // 房子左边界线
 
+    // ---- 小推车 ----
+    constexpr float LAWNMOWER_SPEED = 300.0f;    // 小推车行进速度
+    constexpr float LAWNMOWER_TRIGGER_X = 180.0f; // 僵尸到达此X坐标触发小推车
+
     // ---- 阳光 ----
     constexpr int INITIAL_SUN = 150;
     constexpr int SUN_VALUE = 25;

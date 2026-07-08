@@ -7,10 +7,12 @@
 MenuScene::MenuScene() {
     sceneID = SceneID::Menu;
     skipInputFrame = false;
+    difficultyIndex = 0;
 }
 
 void MenuScene::OnEnter() {
-    skipInputFrame = true;  // 首帧锁定，防止跨场景误触
+    skipInputFrame = true;
+    difficultyIndex = static_cast<int>(Game::GetInstance().GetDifficulty());
 
     int buttonWidth = GameConstants::BUTTON_WIDTH;
     int buttonHeight = GameConstants::BUTTON_HEIGHT;
@@ -27,7 +29,7 @@ void MenuScene::OnEnter() {
         GameConstants::COLOR_BUTTON_HOVER, GameConstants::COLOR_BUTTON_TEXT);
 
     buttons[BTN_SETTINGS].Init(centerX, startY + gap * 2, buttonWidth, buttonHeight,
-        L"设置", GameConstants::COLOR_BUTTON_NORMAL,
+        L"难度: 简单", GameConstants::COLOR_BUTTON_NORMAL,
         GameConstants::COLOR_BUTTON_HOVER, GameConstants::COLOR_BUTTON_TEXT);
 
     buttons[BTN_ABOUT].Init(centerX, startY + gap * 3, buttonWidth, buttonHeight,
@@ -62,7 +64,8 @@ void MenuScene::Update(float dt) {
     } else if (buttons[BTN_HELP].IsClicked()) {
         Game::GetInstance().GetSceneManager().SwitchTo(SceneID::Help);
     } else if (buttons[BTN_SETTINGS].IsClicked()) {
-        Game::GetInstance().GetSceneManager().SwitchTo(SceneID::Settings);
+        difficultyIndex = (difficultyIndex + 1) % 3;
+        Game::GetInstance().SetDifficulty(static_cast<Difficulty>(difficultyIndex));
     } else if (buttons[BTN_ABOUT].IsClicked()) {
         Game::GetInstance().GetSceneManager().SwitchTo(SceneID::About);
     } else if (buttons[BTN_EXIT].IsClicked()) {
@@ -91,6 +94,16 @@ void MenuScene::Render() {
     int lineX = (GameConstants::WINDOW_WIDTH - GameConstants::BUTTON_WIDTH) / 2;
     int lineY = 190;
     line(lineX, lineY, lineX + GameConstants::BUTTON_WIDTH, lineY);
+
+    // 动态更新难度按钮（不同难度不同颜色）
+    const wchar_t* diffNames[] = { L"难度: 简单", L"难度: 困难", L"难度: 地狱" };
+    COLORREF diffNormal[] = { RGB(60, 140, 60),  RGB(180, 160, 40),  RGB(180, 50, 50) };
+    COLORREF diffHover[]  = { RGB(90, 190, 90),  RGB(230, 200, 60),  RGB(230, 70, 70) };
+    int idx = difficultyIndex;
+    buttons[BTN_SETTINGS].Init((GameConstants::WINDOW_WIDTH - GameConstants::BUTTON_WIDTH) / 2,
+        280 + 80 * 2,
+        GameConstants::BUTTON_WIDTH, GameConstants::BUTTON_HEIGHT,
+        diffNames[idx], diffNormal[idx], diffHover[idx], GameConstants::COLOR_BUTTON_TEXT);
 
     // 按钮
     for (int i = 0; i < BTN_COUNT; i++) {

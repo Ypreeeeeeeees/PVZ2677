@@ -3,6 +3,12 @@
 
 #include <memory>
 
+enum class Difficulty {
+    Easy = 0,
+    Hard = 1,
+    Hell = 2
+};
+
 class SceneManager;
 class ResourceManager;
 class InputManager;
@@ -23,6 +29,10 @@ public:
     InputManager&    GetInputManager()    { return *inputManager; }
     Config&          GetConfig()          { return *config; }
     GameTimer&       GetGameTimer()       { return *gameTimer; }
+    Difficulty       GetDifficulty() const { return difficulty; }
+    void             SetDifficulty(Difficulty d) { difficulty = d; }
+    void             SetVictoryInfo(int mowers) { remainingMowers = mowers; }
+    int              GetRemainingMowers() const { return remainingMowers; }
     bool             IsRunning() const    { return isRunning; }
 
 private:
@@ -36,6 +46,8 @@ private:
     std::unique_ptr<InputManager>    inputManager;
     std::unique_ptr<Config>          config;
     std::unique_ptr<GameTimer>       gameTimer;
+    Difficulty difficulty = Difficulty::Easy;
+    int remainingMowers = 0;
     bool isRunning = false;
 };
 

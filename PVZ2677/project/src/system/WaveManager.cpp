@@ -1,34 +1,46 @@
 #include "system/WaveManager.h"
+#include "core/Game.h"
 #include "entity/Zombie.h"
 #include "entity/NormalZombie.h"
 #include "entity/BucketZombie.h"
 #include "utils/Constants.h"
 #include <cstdlib>
+#include <cmath>
 
 WaveManager::WaveManager()
     : totalWaves(0), currentWave(0), waveTimer(0.0f) {
 }
 
-void WaveManager::Init(int totalWaves) {
+void WaveManager::Init(int totalWaves, Difficulty difficulty) {
     this->totalWaves = totalWaves;
     currentWave = 0;
     waveTimer = 10.0f;
+
+    // 难度倍率：Easy=1.0, Hard=1.5, Hell=1.5^2=2.25
+    float scale = 1.0f;
+    for (int d = 0; d < static_cast<int>(difficulty); d++) {
+        scale *= 1.5f;
+    }
 
     waves.clear();
     for (int i = 0; i < totalWaves; i++) {
         WaveEntry w;
         w.spawnTime = 15.0f;
-        // 递增平缓：第1波1个 → 第2波2个 → 第3~4波2~3个 → 最终波4个
-        if (i == 0)      w.normalCount = 1;
-        else if (i == 1) w.normalCount = 2;
-        else if (i == 2) w.normalCount = 2;
-        else if (i == 3) w.normalCount = 3;
-        else             w.normalCount = 4;
 
-        // 铁桶僵尸从第3波起每波1个，最终波2个
-        if (i == 4)      w.bucketCount = 2;
-        else if (i >= 2) w.bucketCount = 1;
-        else             w.bucketCount = 0;
+        int baseNormal = 0;
+        if (i == 0)      baseNormal = 1;
+        else if (i == 1) baseNormal = 2;
+        else if (i == 2) baseNormal = 2;
+        else if (i == 3) baseNormal = 3;
+        else             baseNormal = 4;
+
+        int baseBucket = 0;
+        if (i == 4)      baseBucket = 2;
+        else if (i >= 2) baseBucket = 1;
+        else             baseBucket = 0;
+
+        w.normalCount = static_cast<int>(std::ceil(baseNormal * scale));
+        w.bucketCount = static_cast<int>(std::ceil(baseBucket * scale));
 
         waves.push_back(w);
     }
