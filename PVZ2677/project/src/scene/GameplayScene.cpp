@@ -33,6 +33,7 @@ void GameplayScene::OnEnter() {
     gameState = 0;
     isPlanting = false;
     isShovelMode = false;
+    isPaused = false;
     naturalSunTimer = 0.0f;
 
     // 铲子按钮位置（卡片栏右侧）
@@ -54,10 +55,19 @@ void GameplayScene::OnEnter() {
         GameConstants::WALLNUT_PRICE, GameConstants::WALLNUT_COOLDOWN,
         380, 10, 80, 85);
 
+    // 初始化暂停按钮
+    pauseContinueBtn.Init(540, 280, GameConstants::BUTTON_WIDTH, GameConstants::BUTTON_HEIGHT,
+        L"继续游戏", GameConstants::COLOR_BUTTON_NORMAL,
+        GameConstants::COLOR_BUTTON_HOVER, GameConstants::COLOR_BUTTON_TEXT);
+    pauseMenuBtn.Init(540, 370, GameConstants::BUTTON_WIDTH, GameConstants::BUTTON_HEIGHT,
+        L"返回主菜单", GameConstants::COLOR_BUTTON_NORMAL,
+        GameConstants::COLOR_BUTTON_HOVER, GameConstants::COLOR_BUTTON_TEXT);
+
     // 初始化波次
     waveManager.Init(5, Game::GetInstance().GetDifficulty());
 
-    // 初始化小推车（每行一个，放在房子边界右侧）
+    // 初始化小推车
+    lawnMowers.clear();
     for (int r = 0; r < GameConstants::MAP_ROWS; r++) {
         float mowerY = static_cast<float>(GameConstants::MAP_OFFSET_Y + r * GameConstants::CELL_SIZE);
         lawnMowers.push_back(std::make_unique<LawnMower>(
@@ -81,9 +91,9 @@ void GameplayScene::OnExit() {
 }
 
 void GameplayScene::Update(float dt) {
-    if (gameState != 0) {
+    // 胜负场景切换（正常流程）
+    if (gameState != 0 && !isPaused) {
         if (gameState == 1) {
-            // 统计未被触发的小推车（状态仍为 Idle）
             int mowers = 0;
             for (auto& m : lawnMowers) {
                 if (m->GetState() == LawnMowerState::Idle) mowers++;
@@ -96,11 +106,15 @@ void GameplayScene::Update(float dt) {
         return;
     }
 
+    if (isPaused) {
+        HandlePauseInput(dt);
+        return;
+    }
+
     HandleInput(dt);
     UpdateSunSystem(dt);
     waveManager.Update(dt, zombies, GameConstants::MAP_ROWS);
 
-    // 检测新波次 → 触发居中提示
     int waveNow = waveManager.GetCurrentWave();
     if (waveNow > lastWaveAnnounced && waveNow <= waveManager.GetTotalWaves()) {
         lastWaveAnnounced = waveNow;
@@ -118,29 +132,57 @@ void GameplayScene::Update(float dt) {
     CheckWinLose();
 }
 
+void GameplayScene::HandlePauseInput(float dt) {
+    InputManager& input = Game::GetInstance().GetInputManager();
+
+    if (pauseLockFrame) {
+        pauseLockFrame = false;
+        return;
+    }
+
+    int mx = input.GetMouseX();
+    int my = input.GetMouseY();
+    pauseContinueBtn.Update(mx, my, input.IsMouseDown(), input.IsMouseClicked());
+    pauseMenuBtn.Update(mx, my, input.IsMouseDown(), input.IsMouseClicked());
+
+    if (pauseContinueBtn.IsClicked() || input.IsKeyPressed(VK_ESCAPE)) {
+        isPaused = false;
+        return;
+    }
+
+    if (pauseMenuBtn.IsClicked()) {
+        // 返回主菜单前清空（正常流程）
+        plants.clear();
+        zombies.clear();
+        bullets.clear();
+        suns.clear();
+        lawnMowers.clear();
+        Game::GetInstance().GetSceneManager().SwitchTo(SceneID::Menu);
+    }
+}
+
 void GameplayScene::HandleInput(float dt) {
     InputManager& input = Game::GetInstance().GetInputManager();
     int mx = input.GetMouseX();
     int my = input.GetMouseY();
 
-    // ESC 暂停
+    // ESC 暂停（内嵌，不切换场景）
     if (input.IsKeyPressed(VK_ESCAPE)) {
-        Game::GetInstance().GetSceneManager().SwitchTo(SceneID::Pause);
+        if (isPlanting) isPlanting = false;
+        isPaused = true;
+        pauseLockFrame = true;
         return;
     }
 
     if (isPlanting) {
-        // 首帧锁定：跳过卡片点击所在帧的种植判定
         if (plantLockFrame) {
             plantLockFrame = false;
             return;
         }
-        // 右键取消种植
         if (input.IsMouseClicked() && mx < GameConstants::MAP_OFFSET_X) {
             isPlanting = false;
             return;
         }
-        // 仅在地图区域内点击才种植
         if (input.IsMouseClicked() &&
             my >= GameConstants::MAP_OFFSET_Y &&
             my <= GameConstants::MAP_OFFSET_Y + GameConstants::MAP_GRID_HEIGHT) {
@@ -152,16 +194,13 @@ void GameplayScene::HandleInput(float dt) {
     // 铲子模式
     if (isShovelMode) {
         if (input.IsMouseClicked()) {
-            // 点击地图区域铲除植物
             if (my >= GameConstants::MAP_OFFSET_Y &&
                 my <= GameConstants::MAP_OFFSET_Y + GameConstants::MAP_GRID_HEIGHT) {
                 CellPos cell = map.ScreenToCell(mx, my);
                 if (map.IsValidCell(cell.row, cell.col) && !map.CanPlant(cell.row, cell.col)) {
                     Plant* plant = map.GetPlant(cell.row, cell.col);
                     if (plant) {
-                        // 退还 50% 阳光
                         hud.AddSun(plant->GetPrice() / 2);
-                        // 从 plants 容器中移除
                         plants.erase(std::remove_if(plants.begin(), plants.end(),
                             [&](const auto& p) { return p.get() == plant; }), plants.end());
                         map.RemovePlant(cell.row, cell.col);
@@ -173,7 +212,7 @@ void GameplayScene::HandleInput(float dt) {
         return;
     }
 
-    // 铲子按钮点击（植物栏右侧）
+    // 铲子按钮点击
     if (input.IsMouseClicked() &&
         mx >= shovelX && mx <= shovelX + shovelW &&
         my >= shovelY && my <= shovelY + shovelH) {
@@ -208,16 +247,9 @@ void GameplayScene::HandleInput(float dt) {
 void GameplayScene::StartPlanting(CardType type) {
     int price = 0;
     int cardIndex = 0;
-    if (type == CardType::SunFlower) {
-        price = GameConstants::SUNFLOWER_PRICE;
-        cardIndex = 0;
-    } else if (type == CardType::PeaShooter) {
-        price = GameConstants::PEASHOOTER_PRICE;
-        cardIndex = 1;
-    } else if (type == CardType::WallNut) {
-        price = GameConstants::WALLNUT_PRICE;
-        cardIndex = 2;
-    }
+    if (type == CardType::SunFlower) { price = GameConstants::SUNFLOWER_PRICE; cardIndex = 0; }
+    else if (type == CardType::PeaShooter) { price = GameConstants::PEASHOOTER_PRICE; cardIndex = 1; }
+    else if (type == CardType::WallNut) { price = GameConstants::WALLNUT_PRICE; cardIndex = 2; }
 
     if (!hud.SpendSun(price)) return;
     cards[cardIndex].StartCooldown();
@@ -229,13 +261,8 @@ void GameplayScene::StartPlanting(CardType type) {
 
 void GameplayScene::TryPlant(int screenX, int screenY) {
     CellPos cell = map.ScreenToCell(screenX, screenY);
-    if (!map.IsValidCell(cell.row, cell.col)) {
-        isPlanting = false;
-        return;
-    }
-    if (!map.CanPlant(cell.row, cell.col)) {
-        return;
-    }
+    if (!map.IsValidCell(cell.row, cell.col)) { isPlanting = false; return; }
+    if (!map.CanPlant(cell.row, cell.col)) return;
 
     if (plantingType == CardType::SunFlower) {
         auto plant = std::make_unique<SunFlower>(cell.row, cell.col);
@@ -255,20 +282,17 @@ void GameplayScene::TryPlant(int screenX, int screenY) {
 }
 
 void GameplayScene::UpdateSunSystem(float dt) {
-    // 自然阳光
     naturalSunTimer += dt;
     if (naturalSunTimer >= GameConstants::NATURAL_SUN_INTERVAL) {
         naturalSunTimer = 0.0f;
         int col = rand() % GameConstants::MAP_COLS;
         Point pt = map.CellToScreen(0, col);
-        auto s = std::make_unique<Sun>(static_cast<float>(pt.x), 0.0f,
-                                       GameConstants::SUN_VALUE);
+        auto s = std::make_unique<Sun>(static_cast<float>(pt.x), 0.0f, GameConstants::SUN_VALUE);
         s->SetFalling(true);
         s->SetTargetY(static_cast<float>(pt.y));
         suns.push_back(std::move(s));
     }
 
-    // 向日葵产出阳光
     for (auto& plant : plants) {
         if (!plant->IsAlive() || plant->GetName() != L"向日葵") continue;
         SunFlower* sf = static_cast<SunFlower*>(plant.get());
@@ -276,24 +300,16 @@ void GameplayScene::UpdateSunSystem(float dt) {
             sf->ResetSunTimer();
             Point pt = map.CellToScreen(plant->GetRow(), plant->GetCol());
             suns.push_back(std::make_unique<Sun>(
-                static_cast<float>(pt.x), static_cast<float>(pt.y - 10),
-                GameConstants::SUN_VALUE));
+                static_cast<float>(pt.x), static_cast<float>(pt.y - 10), GameConstants::SUN_VALUE));
         }
     }
 
-    // 阳光实体更新 + 超时清理
-    for (auto& sun : suns) {
-        sun->Update(dt);
-    }
+    for (auto& sun : suns) sun->Update(dt);
 }
 
 void GameplayScene::UpdateEntities(float dt) {
-    // 植物更新
-    for (auto& plant : plants) {
-        plant->Update(dt);
-    }
+    for (auto& plant : plants) plant->Update(dt);
 
-    // 豌豆射手发射
     for (auto& plant : plants) {
         if (!plant->IsAlive() || plant->GetName() != L"豌豆射手") continue;
         PeaShooter* ps = static_cast<PeaShooter*>(plant.get());
@@ -306,25 +322,12 @@ void GameplayScene::UpdateEntities(float dt) {
         }
     }
 
-    // 僵尸更新
+    for (auto& zombie : zombies) zombie->Update(dt);
+    for (auto& bullet : bullets) bullet->Update(dt);
+    for (auto& mower : lawnMowers) mower->Update(dt);
+
     for (auto& zombie : zombies) {
-        zombie->Update(dt);
-    }
-
-    // 子弹更新
-    for (auto& bullet : bullets) {
-        bullet->Update(dt);
-    }
-
-    // 小推车更新
-    for (auto& mower : lawnMowers) {
-        mower->Update(dt);
-    }
-
-    // 检查僵尸是否到达房子
-    for (auto& zombie : zombies) {
-        if (zombie->IsAlive() &&
-            map.HasZombieReachedHouse(zombie->GetX())) {
+        if (zombie->IsAlive() && map.HasZombieReachedHouse(zombie->GetX())) {
             gameState = 2;
             return;
         }
@@ -335,7 +338,6 @@ void GameplayScene::CheckCollisions() {
     collisionManager.CheckZombiePlant(zombies, map);
     collisionManager.CheckBulletZombie(bullets, zombies);
 
-    // 僵尸攻击植物伤害结算（按攻击间隔）
     for (auto& zombie : zombies) {
         if (!zombie->IsAlive() || !zombie->IsAttacking()) continue;
         if (!zombie->CanDealDamage()) continue;
@@ -355,8 +357,30 @@ void GameplayScene::CheckCollisions() {
     }
 }
 
+void GameplayScene::CheckLawnMowers() {
+    for (auto& mower : lawnMowers) {
+        if (mower->GetState() != LawnMowerState::Idle) continue;
+        int row = mower->GetRow();
+        float triggerX = GameConstants::LAWNMOWER_TRIGGER_X;
+        for (auto& zombie : zombies) {
+            if (!zombie->IsAlive() || zombie->GetRow() != row) continue;
+            if (zombie->GetX() <= triggerX) { mower->Trigger(); break; }
+        }
+    }
+
+    for (auto& mower : lawnMowers) {
+        if (mower->GetState() != LawnMowerState::Moving) continue;
+        int row = mower->GetRow();
+        float mowerX = mower->GetX();
+        for (auto& zombie : zombies) {
+            if (!zombie->IsAlive() || zombie->GetRow() != row) continue;
+            if (zombie->GetX() >= mowerX - 10 && zombie->GetX() <= mowerX + 60)
+                zombie->TakeDamage(9999);
+        }
+    }
+}
+
 void GameplayScene::CleanupDead() {
-    // 清除死亡植物（同步清理 Map 格子）
     plants.erase(std::remove_if(plants.begin(), plants.end(),
         [this](const auto& p) {
             if (!p->IsAlive() && p->GetState() == PlantState::Dead) {
@@ -366,51 +390,17 @@ void GameplayScene::CleanupDead() {
             return false;
         }), plants.end());
 
-    // 清除死亡僵尸
     zombies.erase(std::remove_if(zombies.begin(), zombies.end(),
         [](const auto& z) { return !z->IsAlive(); }), zombies.end());
 
-    // 清除死亡/离屏子弹
     bullets.erase(std::remove_if(bullets.begin(), bullets.end(),
         [](const auto& b) { return !b->IsAlive(); }), bullets.end());
 
-    // 清除消失的阳光
     suns.erase(std::remove_if(suns.begin(), suns.end(),
         [](const auto& s) { return !s->IsAlive(); }), suns.end());
 
-    // 清除已飞出屏幕的小推车
     lawnMowers.erase(std::remove_if(lawnMowers.begin(), lawnMowers.end(),
         [](const auto& m) { return m->GetState() == LawnMowerState::Gone; }), lawnMowers.end());
-}
-
-void GameplayScene::CheckLawnMowers() {
-    for (auto& mower : lawnMowers) {
-        if (mower->GetState() != LawnMowerState::Idle) continue;
-        int row = mower->GetRow();
-        float triggerX = GameConstants::LAWNMOWER_TRIGGER_X;
-
-        for (auto& zombie : zombies) {
-            if (!zombie->IsAlive() || zombie->GetRow() != row) continue;
-            if (zombie->GetX() <= triggerX) {
-                mower->Trigger();
-                break;
-            }
-        }
-    }
-
-    // 移动中的小推车消灭同行所有僵尸
-    for (auto& mower : lawnMowers) {
-        if (mower->GetState() != LawnMowerState::Moving) continue;
-        int row = mower->GetRow();
-        float mowerX = mower->GetX();
-
-        for (auto& zombie : zombies) {
-            if (!zombie->IsAlive() || zombie->GetRow() != row) continue;
-            if (zombie->GetX() >= mowerX - 10 && zombie->GetX() <= mowerX + 60) {
-                zombie->TakeDamage(9999);  // 一击必杀
-            }
-        }
-    }
 }
 
 void GameplayScene::CheckWinLose() {
@@ -421,15 +411,11 @@ void GameplayScene::CheckWinLose() {
 
 void GameplayScene::Render() {
     cleardevice();
-
-    // 背景
     setbkcolor(RGB(60, 120, 40));
     cleardevice();
 
-    // 地图
     map.Render();
 
-    // 种植预览
     if (isPlanting) {
         InputManager& input = Game::GetInstance().GetInputManager();
         CellPos cell = map.ScreenToCell(input.GetMouseX(), input.GetMouseY());
@@ -438,14 +424,12 @@ void GameplayScene::Render() {
             int s = GameConstants::CELL_SIZE * 2 / 3;
             int cx = pt.x - s / 2;
             int cy = pt.y - s / 2;
-            COLORREF color = map.CanPlant(cell.row, cell.col)
-                ? RGB(100, 255, 100) : RGB(255, 100, 100);
+            COLORREF color = map.CanPlant(cell.row, cell.col) ? RGB(100, 255, 100) : RGB(255, 100, 100);
             setfillcolor(color);
             solidroundrect(cx, cy, cx + s, cy + s, 5, 5);
         }
     }
 
-    // 植物
     for (auto& plant : plants) {
         if (!plant->IsAlive()) continue;
         Point pt = map.CellToScreen(plant->GetRow(), plant->GetCol());
@@ -472,7 +456,6 @@ void GameplayScene::Render() {
             solidcircle(pt.x, pt.y + s / 5, 4);
         }
 
-        // ---- 血条 ----
         if (plant->GetHealth() < plant->GetMaxHealth()) {
             int barW = s;
             int barH = 6;
@@ -480,11 +463,8 @@ void GameplayScene::Render() {
             int barY = cy - 10;
             float ratio = static_cast<float>(plant->GetHealth()) / static_cast<float>(plant->GetMaxHealth());
             int fillW = static_cast<int>(barW * ratio);
-
-            // 背景
             setfillcolor(RGB(60, 60, 60));
             solidrectangle(barX, barY, barX + barW, barY + barH);
-            // 血量（绿→黄→红渐变）
             COLORREF hpColor = (ratio > 0.5f) ? RGB(100, 220, 80)
                              : (ratio > 0.25f) ? RGB(220, 200, 50)
                              : RGB(220, 60, 60);
@@ -493,36 +473,16 @@ void GameplayScene::Render() {
         }
     }
 
-    // 僵尸
-    for (auto& zombie : zombies) {
-        zombie->Render();
-    }
+    for (auto& zombie : zombies) zombie->Render();
+    for (auto& mower : lawnMowers) mower->Render();
+    for (auto& bullet : bullets) bullet->Render();
+    for (auto& sun : suns) sun->Render();
 
-    // 小推车（在僵尸上方绘制）
-    for (auto& mower : lawnMowers) {
-        mower->Render();
-    }
-
-    // 子弹
-    for (auto& bullet : bullets) {
-        bullet->Render();
-    }
-
-    // 阳光
-    for (auto& sun : suns) {
-        sun->Render();
-    }
-
-    // 卡槽背景
     setfillcolor(RGB(40, 30, 20));
     solidrectangle(0, 0, GameConstants::WINDOW_WIDTH, GameConstants::MAP_OFFSET_Y);
 
-    // 卡片
-    for (int i = 0; i < 3; i++) {
-        cards[i].Render();
-    }
+    for (int i = 0; i < 3; i++) cards[i].Render();
 
-    // 铲子按钮
     {
         COLORREF shovelBg = isShovelMode ? RGB(180, 140, 80) : RGB(100, 80, 50);
         setfillcolor(shovelBg);
@@ -530,30 +490,36 @@ void GameplayScene::Render() {
         setlinecolor(RGB(120, 100, 60));
         setlinestyle(PS_SOLID, 1);
         rectangle(shovelX, shovelY, shovelX + shovelW, shovelY + shovelH);
-
-        // 铲子图标：T 形状
         setfillcolor(RGB(200, 160, 100));
         int cx = shovelX + shovelW / 2;
-        // 铲柄
         solidrectangle(cx - 2, shovelY + 10, cx + 2, shovelY + 60);
-        // 铲头
         solidrectangle(cx - 8, shovelY + 55, cx + 8, shovelY + 65);
     }
 
-    // HUD
     hud.Render();
 
-    // 新波次提示（居中大字）
     if (waveAnnouncementTimer > 0.0f) {
         std::wstring waveText = L"第 " + std::to_wstring(waveManager.GetCurrentWave()) + L" 波僵尸来袭!";
-        int alpha = static_cast<int>(waveAnnouncementTimer * 127);  // 渐隐效果
+        int alpha = static_cast<int>(waveAnnouncementTimer * 127);
         if (alpha > 255) alpha = 255;
         settextcolor(RGB(255, 100 + alpha / 3, 50));
         settextstyle(40, 0, _T("微软雅黑"));
         setbkmode(TRANSPARENT);
         int tw = textwidth(waveText.c_str());
-        outtextxy((GameConstants::WINDOW_WIDTH - tw) / 2,
-                  GameConstants::WINDOW_HEIGHT / 2 - 20,
-                  waveText.c_str());
+        outtextxy((GameConstants::WINDOW_WIDTH - tw) / 2, GameConstants::WINDOW_HEIGHT / 2 - 20, waveText.c_str());
+    }
+
+    // 暂停遮罩（在最上层）
+    if (isPaused) {
+        setfillcolor(RGB(80, 80, 80));
+        solidrectangle(0, 0, GameConstants::WINDOW_WIDTH, GameConstants::WINDOW_HEIGHT);
+        setbkmode(TRANSPARENT);
+        settextcolor(GameConstants::COLOR_TITLE);
+        settextstyle(48, 0, _T("微软雅黑"));
+        const wchar_t* title = L"暂停";
+        int tw = textwidth(title);
+        outtextxy((GameConstants::WINDOW_WIDTH - tw) / 2, 140, title);
+        pauseContinueBtn.Render();
+        pauseMenuBtn.Render();
     }
 }

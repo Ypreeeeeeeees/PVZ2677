@@ -3,6 +3,7 @@
 
 #include "core/Scene.h"
 #include "component/Card.h"
+#include "component/Button.h"
 #include "component/HUD.h"
 #include "system/Map.h"
 #include "system/CollisionManager.h"
@@ -29,6 +30,7 @@ public:
 
 private:
     void HandleInput(float dt);
+    void HandlePauseInput(float dt);
     void UpdateSunSystem(float dt);
     void UpdateEntities(float dt);
     void CheckCollisions();
@@ -61,6 +63,12 @@ private:
     int gameState;           // 0=进行中, 1=胜利, 2=失败
     float waveAnnouncementTimer = 0.0f;  // 新波次提示计时器
     int   lastWaveAnnounced = 0;         // 上轮已提示到的波次
+
+    // 内嵌暂停
+    bool isPaused = false;
+    bool pauseLockFrame = false;
+    Button pauseContinueBtn;
+    Button pauseMenuBtn;
 };
 
 #endif // PVZ_GAMEPLAYSCENE_H
